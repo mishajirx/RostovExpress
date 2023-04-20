@@ -40,6 +40,18 @@ CODE = 'zhern0206eskiy'
 PATTERN = r = re.compile('.{2}:.{2}-.{2}:.{2}')
 
 
+def upgrade_run(default_run):
+    def new_run():
+        db_session.global_init("db/couriers.db")
+        app.register_blueprint(shop_api.blueprint)
+        default_run()
+
+    return new_run
+
+
+app.run = upgrade_run(app.run)
+
+
 class CourierModel(pydantic.BaseModel):
     base: List[int]
     courier_id: int
@@ -800,8 +812,8 @@ def clear():
 
 
 def main():
-    db_session.global_init("db/couriers.db")
-    app.register_blueprint(shop_api.blueprint)
+    # db_session.global_init("db/couriers.db")
+    # app.register_blueprint(shop_api.blueprint)
     app.run()
     # app.run(port=8080)
     # serve(app, host='127.0.0.1', port=8080)
