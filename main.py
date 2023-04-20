@@ -807,10 +807,12 @@ def main():
     # serve(app, host='127.0.0.1', port=8080)
     # app.run(host='0.0.0.0', port=8080)
 
+
 def create_app():
-    db_session.global_init("db/couriers.db")
+    db_session.global_init("/home/mzhernevskii/RostovExpress/db/couriers.db")
     app.register_blueprint(shop_api.blueprint)
     return app
+
 
 if __name__ == '__main__':
     main()
