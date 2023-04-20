@@ -1,7 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import PasswordField, StringField, TextAreaField, SubmitField, RadioField
-from wtforms.fields.html5 import EmailField
-from wtforms.validators import DataRequired
+from wtforms import TextAreaField, SubmitField
 
 
 class EditInfoForm(FlaskForm):

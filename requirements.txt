@@ -18,5 +18,5 @@ SQLAlchemy==1.4.9
 typing_extensions==4.3.0
 urllib3==1.26.12
 Werkzeug==2.2.2
-WTForms==2.3.3
+WTForms==3.0.0
 yarg==0.1.9
