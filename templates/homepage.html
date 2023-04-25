@@ -1,45 +1,46 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <form action="" method="post">
-        <div class="container" style="display: flex;align-items: center;justify-content: center;">
-            <!-- Любой код -->
-            <div>
+<form action="" method="post">
+    <div class="container" style="display: flex;align-items: center;justify-content: center;">
+        <!-- Любой код -->
+        <div>
 
-                <p>
+            <p>
 
 
-                    {% if not current_user.is_authenticated %}
-                        <p>Вы не вошли в систему</p>
-                    {% else %}
-                        {% if current_user.user_type < 3 %}
-                            <a class="btn btn-success" style="width: 80px; height:80px" href="/orders">Сделать
-                                заказ</a>
-                            <a class="btn btn-success" style="width: 180px; height:80px" href="/users/edit">Редактировать
-                                информацию</a>
-                        {% endif %}
-                        {% if current_user.user_type == 2 %}
-                            <a class="btn btn-success" style="width: 180px; height:80px" href="/orders/assign">Взять
-                                заказ</a>
-                            <a class="btn btn-success" style="width: 180px; height:80px" href="/orders/complete">Выполнить
-                                заказ</a>
-                        {% endif %}
-                        {% if current_user.user_type == 3 %}
-                            <a class="btn btn-success" style="width: 180px; height:80px" href="/couriers/delete">Удалить
-                                курьера</a>
-                            <a class="btn btn-success" style="width: 180px; height:80px" href="/couriers">Утвердить
-                                курьера</a>
-                            <a class="btn btn-success" style="width: 180px; height:80px" href="/admins">Назначить
-                                админов</a>
-                            <a class="btn btn-success" style="width: 180px; height:80px" href="/clear">Очистить
-                                базу данных</a>
-                        {% endif %}
+                {% if not current_user.is_authenticated %}
+            <p>Вы не вошли в систему</p>
+            {% else %}
+            {% if current_user.user_type < 3 %}
+            <a class="btn btn-success" style="width: 80px; height:80px" href="/orders">Сделать
+                заказ</a>
+            <a class="btn btn-success" style="width: 180px; height:80px" href="/users/edit">Редактировать
+                информацию</a>
+            {% endif %}
+            {% if current_user.user_type == 2 %}
+            <a class="btn btn-success" style="width: 180px; height:80px" href="/orders/assign">Взять
+                заказ</a>
+            <a class="btn btn-success" style="width: 180px; height:80px" href="/orders/complete">Выполнить
+                заказ</a>
+            <a class="btn btn-success" style="width: 180px; height:80px" href="/couriers/get">Статистика</a>
+            {% endif %}
+            {% if current_user.user_type == 3 %}
+            <a class="btn btn-success" style="width: 180px; height:80px" href="/couriers/delete">Удалить
+                курьера</a>
+            <a class="btn btn-success" style="width: 180px; height:80px" href="/couriers">Утвердить
+                курьера</a>
+            <a class="btn btn-success" style="width: 180px; height:80px" href="/admins">Назначить
+                админов</a>
+            <a class="btn btn-success" style="width: 180px; height:80px" href="/clear">Очистить
+                базу данных</a>
+            {% endif %}
 
-                    {% endif %}
-                </p>
-            </div>
+            {% endif %}
+            </p>
         </div>
+    </div>
 
 
-    </form>
+</form>
 {% endblock %}

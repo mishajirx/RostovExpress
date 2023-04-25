@@ -34,6 +34,7 @@ login_manager.init_app(app)
 courier_fields = {'courier_id', 'courier_type', 'regions', 'working_hours'}
 order_fields = {'order_id', 'weight', 'region', 'delivery_hours'}
 c_type = {'foot': 10, 'bike': 15, 'car': 50}
+translate_to_russian = {'foot': 'Пешеход', 'bike': "Велосипедист", 'car': "На машине"}
 rev_c_type = {10: 'foot', 15: 'bike', 50: 'car'}
 kd = {10: 2, 15: 5, 50: 9}
 CODE = 'zhern0206eskiy'
@@ -561,8 +562,8 @@ def get_courier():
         if not courier.earnings:
             # return jsonify(res), 200
             return render_template('courier_info.html',
-                                   t=res['courier_type'],
-                                   wh=str(res['working_hours']),
+                                   t=translate_to_russian[res['courier_type']],
+                                   wh=','.join(list(map(str, res['working_hours']))),
                                    rs=str(res['regions']),
                                    earnings='-',
                                    rating='-'
@@ -576,8 +577,8 @@ def get_courier():
         res['rating'] = round((60 * 60 - min(t, 60 * 60)) / (60 * 60) * 5, 2)
         # return jsonify(res), 200
         return render_template('courier_info.html',
-                               t=res['courier_type'],
-                               wh=str(res['working_hours']),
+                               t=translate_to_russian[res['courier_type']],
+                               wh=','.join(list(map(str, res['working_hours']))),
                                rs=str(res['regions']),
                                earnings=str(res['earnings']),
                                rating=str(res['rating'])
