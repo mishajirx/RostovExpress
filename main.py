@@ -438,7 +438,9 @@ def add_orders():
         is_ok = True
         already_in_base = [i.id for i in db_sess.query(Order).all()]
         req_json.append({'order_id': max(already_in_base + [0]) + 1, 'weight': form.weight.data,
-                         'region': form.region.data, 'delivery_hours': form.dh.data.split(',')})
+                         'region': form.region.data,
+                         'delivery_hours': [parse_time(form.workhours_start.data) + '-' + parse_time(
+                             form.workhours_end.data)]})
         # print(req_json[0]['delivery_hours'])
         for order_info in req_json:
             flag = False
