@@ -756,7 +756,7 @@ def get_user_orders():
     for order in orders:
         list_of_couriers = db_sess.query(User).filter(User.c_id == order.orders_courier).all()
         if list_of_couriers:
-            courier_names.append(list_of_couriers[0].name)
+            courier_names.append(f"{list_of_couriers[0].name}, телефон: {list_of_couriers[0].phone_number}")
         else:
             courier_names.append("Пока что нет курьера")
 
