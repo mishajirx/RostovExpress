@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Мои заказы</h1>
+{% for item in items %}
+<div>
+    <h2>Заказ {{item[0].id}}</h2>
+    <h5>Вес: </h5><p> {{ item[0].weight }}</p>
+    <h5>Регион: </h5><p> {{ item[0].region }}</p>
+    <h5>Время доставки заказа: </h5><p>{{ item[1].hours }}</p>
+    <h5>Имя курьера: </h5><p>{{ item[2] }}</p>
+    {% if item[0].complete_time %}
+    <h5>Доставлен в : </h5><p>{{ item[0].complete_time }} по Гринвичу</p>
+    {% else %}
+    <h5>Доставлен в : </h5><p>В пути</p>
+    {% endif %}
+</div>
+{% endfor %}
+{% endblock %}

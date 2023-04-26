@@ -455,6 +455,7 @@ def add_orders():
             order.weight = order_info['weight']
             order.region = order_info['region']
             order.orders_courier = 0
+            order.user_id = current_user.id
             for i in list(order_info['delivery_hours']):
                 dh = DH()
                 dh.order_id = order.id
@@ -733,6 +734,29 @@ def change_about():
         form.type_of_courier.data, form.region.data, form.workhours_start.data, form.workhours_end.data = parsed_about
 
     return render_template('edit_user.html', form=form, title="Изменить резюме")
+
+
+@app.route('/users/get_orders', methods=['POST', 'GET'])
+@login_required
+def get_user_orders():
+    user_id = current_user.id
+    # courier_id = request.json['courier_id']
+    db_sess = db_session.create_session()
+    orders = db_sess.query(Order).filter(Order.user_id == user_id).all()
+    delivery_hours = [db_sess.query(DH).filter(DH.order_id == order.id).all()[0] for order in orders]
+    courier_names = []
+    for order in orders:
+        list_of_couriers = db_sess.query(User).filter(User.c_id == order.orders_courier).all()
+        if list_of_couriers:
+            courier_names.append(list_of_couriers[0].name)
+        else:
+            courier_names.append("Пока что нет курьера")
+
+
+    items = zip(orders, delivery_hours, courier_names)
+
+    return render_template('existing_orders.html', title="Мои заказы", items=items)
+    # return jsonify({"orders": res, 'assign_time': str(assign_time)}), 200
 
 
 @app.route('/users/get', methods=['POST', 'GET'])
