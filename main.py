@@ -298,10 +298,18 @@ def register():
         if db_sess.query(User).filter(User.email == form.email.data).first():
             return render_template('register.html', title='Регистрация',
                                    form=form,
-                                   message="Такой пользователь уже есть")
+                                   message="Пользователь c такой почтой уже есть")
+        raw_number = str(form.phone_number.data)
+        print(raw_number)
+        # help(raw_number)
+        if db_sess.query(User).filter(User.phone_number == raw_number).first():
+            return render_template('register.html', title='Регистрация',
+                                   form=form,
+                                   message="Пользователь c таким телефоном уже есть")
         user = User(
             name=form.name.data,
             email=form.email.data,
+            phone_number=raw_number,
             about="",
             user_type=0
         )
@@ -751,7 +759,6 @@ def get_user_orders():
             courier_names.append(list_of_couriers[0].name)
         else:
             courier_names.append("Пока что нет курьера")
-
 
     items = zip(orders, delivery_hours, courier_names)
 
