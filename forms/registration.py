@@ -8,7 +8,7 @@ from wtforms_alchemy import PhoneNumberField
 
 class RegisterForm(FlaskForm):
     email = EmailField('Почта', validators=[DataRequired()])
-    phone_number = PhoneNumberField("Телефон в формате +7 XXX XXX XX XX")
+    phone_number = PhoneNumberField("Телефон в формате +7 XXX XXX XX XX", validators=[DataRequired()])
     password = PasswordField('Пароль', validators=[DataRequired()])
     password_again = PasswordField('Повторите пароль', validators=[DataRequired()])
     name = StringField('ФИО', validators=[DataRequired()])
