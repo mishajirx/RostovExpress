@@ -464,7 +464,7 @@ def add_orders():
         req_json.append({'order_id': max(already_in_base + [0]) + 1, 'weight': form.weight.data,
                          'region': form.region.data,
                          'delivery_hours': [parse_time(form.workhours_start.data) + '-' + parse_time(
-                             form.workhours_end.data)]})
+                             form.workhours_end.data)],})
         # print(req_json[0]['delivery_hours'])
         for order_info in req_json:
             flag = False
@@ -490,6 +490,7 @@ def add_orders():
             order.region = order_info['region']
             order.orders_courier = 0
             order.user_id = current_user.id
+            order.address = form.address.data
             for i in list(order_info['delivery_hours']):
                 dh = DH()
                 dh.order_id = order.id

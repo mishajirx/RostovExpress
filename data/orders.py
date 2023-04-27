@@ -10,6 +10,8 @@ class Order(SqlAlchemyBase):
     region = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     orders_courier = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('couriers.id'))
     user_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
+    address = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     complete_time = sqlalchemy.Column(sqlalchemy.String, nullable=True, default='')
+
     sqlalchemy.orm.relation('User')
     sqlalchemy.orm.relation('Courier')

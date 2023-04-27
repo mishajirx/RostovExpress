@@ -23,6 +23,15 @@
     {% endfor %}
     </p>
     <p>
+        {{ form.address.label }}<br>
+        {{ form.address(class="form-control") }}<br>
+        {% for error in form.address.errors %}
+    <p class="alert alert-danger" role="alert">
+        {{ error }}
+    </p>
+    {% endfor %}
+    </p>
+    <p>
         {{ form.workhours_start.label }}<br>
         {{ form.workhours_start(class="form-control") }}<br>
 
