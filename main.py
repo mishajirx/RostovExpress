@@ -376,7 +376,7 @@ def add_couriers():
         bad_id = []
         is_ok = True
         if not req_json:
-            return render_template('result.html', u='invalid courier(s) information')
+            return render_template('result.html', u='Некорректная инфорация о курьере')
         for courier_info in req_json:
             flag = False
             error_ans = []
@@ -417,7 +417,7 @@ def add_couriers():
 
         if is_ok:
             db_sess.commit()
-            return render_template('result.html', u=str({"couriers": res}))
+            return render_template('result.html', u=str("Курьер добавлен"))
             # return jsonify({"couriers": res}), 201
         # pprint({"validation_error": bad_id})
         # print('-------------------------------------------------------------------------')
@@ -476,11 +476,13 @@ def add_orders():
 
         if is_ok:
             db_sess.commit()
-            return render_template('result.html', u=str({"orders": res}))
+            return render_template('result.html', u=str("Заказ создан!"))
             # return jsonify({"orders": res}), 201
         # pprint({"validation_error": bad_id})
         # print('-------------------------------------------------------------------------')
-        return render_template('result.html', u=str({"validation_error": bad_id}))
+
+        # из всех ошибок сейчас можно только указать неверный вес
+        return render_template('result.html', u=str("Вес не лежит в пределах от 0.01 до 50"))
         # return jsonify({"validation_error": bad_id}), 400
     return render_template('new_order.html', title='Новый заказ', form=form)
 
@@ -548,7 +550,7 @@ def edit_courier():
         courier.currentw += order.weight
         order.orders_courier = courier_id
     db_sess.commit()
-    return render_template('result.html', u=str(res))
+    return render_template('result.html', u="Данные изменены")
 
 
 @app.route('/couriers/get', methods=["GET"])
@@ -614,7 +616,7 @@ def assign_orders():
         res = [{'id': i.id} for i in ords]
         # return jsonify({'orders': res, 'assign_time': courier.last_assign_time}), 201
         return render_template('result.html',
-                               u=str({'orders': res, 'assign_time': courier.last_assign_time}))
+                               u=f"У вас уже есть {len(res)} заказов")
     courier_regions = [i.region for i in
                        db_sess.query(Region).filter(Region.courier_id == courier_id).all()]
     courier_wh = db_sess.query(WH).filter(WH.courier_id == courier_id).all()
@@ -635,7 +637,7 @@ def assign_orders():
            db_sess.query(Order).filter(Order.orders_courier == courier_id,
                                        '' == Order.complete_time)]
     if not res:
-        return render_template('result.html', u=str({"orders": []}))
+        return render_template('result.html', u="Заказов, подходящих под ваш график, пока нет")
         # return jsonify({"orders": []}), 200
     courier.last_pack_cost = kd[courier.maxw] * 500
     # t = str(datetime.datetime.utcnow()).replace(' ', 'T') + 'Z'
@@ -645,7 +647,7 @@ def assign_orders():
     if '' == courier.last_delivery_t:
         courier.last_delivery_t = assign_time
     db_sess.commit()
-    return render_template('result.html', u=str({"orders": res, 'assign_time': str(assign_time)}))
+    return render_template('result.html', u=f"Назначено {len(res)} заказов")
     # return jsonify({"orders": res, 'assign_time': str(assign_time)}), 200
 
 
@@ -690,7 +692,7 @@ def complete_orders(order_id):
         courier.last_pack_cost = 0
     db_sess.commit()
     # return jsonify({'order_id': order.id}), 200
-    return render_template('result.html', u=str({'order_id': order.id}))
+    return render_template('result.html', u=f"Заказ {order.id} выполнен")
 
 
 @app.route('/orders/complete', methods=['POST', 'GET'])
@@ -802,7 +804,7 @@ def delete_couriers(courier_id):
         db_sess.delete(i)
     db_sess.delete(courier)
     db_sess.commit()
-    return render_template('result.html', u=str({"courier_id": courier_id}))
+    return render_template('result.html', u=f"Курьер {courier_id} удален")
     # return jsonify({"courier_id": courier_id}), 200
 
 
