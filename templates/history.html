@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>История событий</h1>
+{% for item in items %}
+<div>
+    <div class="alert alert-success">
+        {{item.event}}
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

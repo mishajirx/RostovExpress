@@ -19,6 +19,7 @@ from data.regions import Region
 from data.workinghours import WH
 from data.deliveryhours import DH
 from data.users import User
+from data.records import Record
 from forms.login import LoginForm
 from forms.what_couriers import NewCourierForm
 from forms.courier_edit import EditInfoForm
@@ -251,6 +252,15 @@ def parse_from_about(about: str) -> (str, int, datetime.time, datetime.time):
     return type_of_courier, region, start_time, end_time
 
 
+def log_event(event: str):
+    db_sess = db_session.create_session()
+    record = Record(
+        event=event
+    )
+    db_sess.add(record)
+    db_sess.commit()
+
+
 @login_manager.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
@@ -316,6 +326,7 @@ def register():
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
+        log_event(f"Пользователь {user.name} зарегистрировался на платформе")
         return redirect('/login')
     return render_template('register.html', title='Регистрация', form=form)
 
@@ -357,7 +368,18 @@ def make_admin(user_id):
         db_sess.delete(courier)
     user.user_type = 3
     db_sess.commit()
+    log_event(f"Пользователь {user.name} назначен админом")
     return render_template('result.html', u=str({"Status": 'Ok, now user is admin'}))
+
+
+@app.route("/history", methods=["GET"])
+@login_required
+def view_history():
+    if (current_user.user_type != 3):
+        return redirect('/')
+    db_sess = db_session.create_session()
+    events = db_sess.query(Record).all()
+    return render_template("history.html", items=events)
 
 
 @app.route('/couriers', methods=['GET', "POST"])
@@ -413,10 +435,12 @@ def add_couriers():
                 wh.hours = i
                 db_sess.add(wh)
             db_sess.add(courier)
+            log_event(f"Пользователь {user.name} назначен курьером")
             res.append({"id": courier_info['courier_id']})
 
         if is_ok:
             db_sess.commit()
+
             return render_template('result.html', u=str("Курьер добавлен"))
             # return jsonify({"couriers": res}), 201
         # pprint({"validation_error": bad_id})
@@ -472,6 +496,7 @@ def add_orders():
                 dh.hours = i
                 db_sess.add(dh)
             db_sess.add(order)
+            log_event(f"Пользователь {current_user.name} сделал заказ на время {order_info['delivery_hours']}")
             res.append({"id": int(order_info['order_id'])})
 
         if is_ok:
@@ -646,6 +671,7 @@ def assign_orders():
     assign_time = t
     if '' == courier.last_delivery_t:
         courier.last_delivery_t = assign_time
+    log_event(f"Курьеру {current_user.name} назначены заказы с номерами {res} в {t}")
     db_sess.commit()
     return render_template('result.html', u=f"Назначено {len(res)} заказов")
     # return jsonify({"orders": res, 'assign_time': str(assign_time)}), 200
@@ -691,6 +717,7 @@ def complete_orders(order_id):
         courier.earnings += courier.last_pack_cost
         courier.last_pack_cost = 0
     db_sess.commit()
+    log_event(f"Курьер {current_user.name} выполнил заказ номер {order.id} в {order.complete_time}")
     # return jsonify({'order_id': order.id}), 200
     return render_template('result.html', u=f"Заказ {order.id} выполнен")
 
@@ -803,6 +830,7 @@ def delete_couriers(courier_id):
     for i in whs:
         db_sess.delete(i)
     db_sess.delete(courier)
+
     db_sess.commit()
     return render_template('result.html', u=f"Курьер {courier_id} удален")
     # return jsonify({"courier_id": courier_id}), 200
@@ -821,6 +849,7 @@ def clear():
     db_sess.query(WH).delete()
     db_sess.query(DH).delete()
     db_sess.query(User).delete()
+    db_sess.query(Record).delete()
     db_sess.commit()
     user = User(
         name='admin',
