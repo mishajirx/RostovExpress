@@ -17,13 +17,13 @@
                 заказ</a>
             <a class="btn btn-success" style="width: 180px; height:80px" href="/users/edit">Редактировать
                 информацию</a>
-            <a class="btn btn-success" style="width: 180px; height:80px" href="/users/get_orders">Мои
+            <a class="btn btn-success" style="width: 180px; height:80px" href="/orders/view/list">Мои
                 заказы</a>
             {% endif %}
             {% if current_user.user_type == 2 %}
             <a class="btn btn-success" style="width: 180px; height:80px" href="/orders/assign">Взять
                 заказ</a>
-            <a class="btn btn-success" style="width: 180px; height:80px" href="/orders/complete">Выполнить
+            <a class="btn btn-success" style="width: 180px; height:80px" href="/orders/complete/list">Выполнить
                 заказ</a>
             <a class="btn btn-success" style="width: 180px; height:80px" href="/couriers/get">Статистика</a>
             {% endif %}

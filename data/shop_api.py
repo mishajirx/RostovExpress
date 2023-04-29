@@ -13,6 +13,7 @@ from data.deliveryhours import DH
 from typing import List, Optional
 import json
 from pydantic import validator
+from help_functions import *
 
 from data.users import User
 
@@ -142,48 +143,48 @@ class OrderModel(pydantic.BaseModel):
                 raise ValueError('Minutes should be between 0 and 59')
         return delivery_hours
 
-
-def is_t_ok(l1, l2) -> bool:
-    # format HH:MM - HH:MM
-    time = [0] * 1440
-    # print(list(l1) + list(l2))
-    for h in list(l1) + list(l2):
-        t = h.hours
-        b1, b2 = t.split('-')
-        a = b1.split(':')
-        a = int(a[0]) * 60 + int(a[1])
-        b = b2.split(':')
-        b = int(b[0]) * 60 + int(b[1])
-        time[a] += 1
-        time[b + 1] -= 1
-        # print(t, b1, b2, a, b, time[a], time[b + 1])
-    # print('---------------------------')
-    balance = 0
-    for i in time:
-        balance += i
-        if balance >= 2:
-            return True
-    return False
-
-
-def choose_orders(ords: list, maxw: int) -> list:
-    try:
-        n, w = len(ords), maxw * 100
-        a = list(map(lambda x: int(x * 100), ords))
-        c = list(map(lambda x: int(x * 100), ords))
-        dp = [[(0, [])] + [(-1, [])] * w for i in range(n)]
-        dp[0][0] = (0, [])
-        dp[0][a[0]] = (c[0], [1])
-        for i in range(1, n):
-            for j in range(1, w + 1):
-                dp[i][j] = dp[i - 1][j]
-                if j - a[i] >= 0 and dp[i - 1][j - a[i]][0] != - 1:
-                    if dp[i][j][0] < dp[i - 1][j - a[i]][0] + c[i]:
-                        dp[i][j] = (dp[i - 1][j - a[i]][0] + c[i], dp[i - 1][j - a[i]][1] + [i + 1])
-        ans = max(dp[-1])[1]
-        return list(map(lambda x: x - 1, ans))
-    except IndexError:
-        return []
+#
+# def is_t_ok(l1, l2) -> bool:
+#     # format HH:MM - HH:MM
+#     time = [0] * 1440
+#     # print(list(l1) + list(l2))
+#     for h in list(l1) + list(l2):
+#         t = h.hours
+#         b1, b2 = t.split('-')
+#         a = b1.split(':')
+#         a = int(a[0]) * 60 + int(a[1])
+#         b = b2.split(':')
+#         b = int(b[0]) * 60 + int(b[1])
+#         time[a] += 1
+#         time[b + 1] -= 1
+#         # print(t, b1, b2, a, b, time[a], time[b + 1])
+#     # print('---------------------------')
+#     balance = 0
+#     for i in time:
+#         balance += i
+#         if balance >= 2:
+#             return True
+#     return False
+#
+#
+# def choose_orders(ords: list, maxw: int) -> list:
+#     try:
+#         n, w = len(ords), maxw * 100
+#         a = list(map(lambda x: int(x * 100), ords))
+#         c = list(map(lambda x: int(x * 100), ords))
+#         dp = [[(0, [])] + [(-1, [])] * w for i in range(n)]
+#         dp[0][0] = (0, [])
+#         dp[0][a[0]] = (c[0], [1])
+#         for i in range(1, n):
+#             for j in range(1, w + 1):
+#                 dp[i][j] = dp[i - 1][j]
+#                 if j - a[i] >= 0 and dp[i - 1][j - a[i]][0] != - 1:
+#                     if dp[i][j][0] < dp[i - 1][j - a[i]][0] + c[i]:
+#                         dp[i][j] = (dp[i - 1][j - a[i]][0] + c[i], dp[i - 1][j - a[i]][1] + [i + 1])
+#         ans = max(dp[-1])[1]
+#         return list(map(lambda x: x - 1, ans))
+#     except IndexError:
+#         return []
 
 
 @blueprint.route('/api/couriers', methods=["POST"])
