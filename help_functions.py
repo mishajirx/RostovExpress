@@ -1,6 +1,9 @@
 import datetime
+from math import sqrt
 
 import requests
+
+API_KEY = '40d1649f-0493-4b70-98ba-98533de7710b'
 
 
 def is_t_ok(l1, l2) -> bool:
@@ -27,20 +30,25 @@ def is_t_ok(l1, l2) -> bool:
 
 
 def get_coordinates(address: str) -> (int, int):
-    coords = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b" \
+    address.replace(',', ',+')
+    coords = f"http://geocode-maps.yandex.ru/1.x/?apikey={API_KEY}" \
              f"&geocode={address}&format=json"
 
     print(coords)
     response = requests.get(coords)
-    if response:
-        json_response = response.json()
-        xy = toponym = \
-            json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]['Point']['pos']
-        xy = f'{xy.replace(" ", ",")}'
+
+    json_response = response.json()
+    xy = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]['Point']['pos']
+    xy = f'{xy.replace(" ", ",")}'
+    return xy
 
 
-def check_address():
-    pass
+def check_address(address: str):
+    try:
+        get_coordinates(address)
+    except:
+        return False
+    return True
 
 
 def choose_orders(ords: list, maxw: int) -> list:
@@ -94,3 +102,11 @@ def parse_from_about(about: str) -> (str, int, datetime.time, datetime.time):
     h2, m2 = map(int, end_time.split(':'))
     end_time = datetime.time(h2, m2)
     return type_of_courier, region, start_time, end_time
+
+
+def count_distance(c1: str, c2: str) -> int:
+    x1, y1 = map(float, c1.split(','))
+    x2, y2 = map(float, c2.split(','))
+    dx = x1 - x2
+    dy = y1 - y2
+    return sqrt(dx ** 2 + dy ** 2) * 111

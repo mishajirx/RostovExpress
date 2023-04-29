@@ -42,7 +42,7 @@ rev_c_type = {10: 'foot', 15: 'bike', 50: 'car'}
 kd = {10: 2, 15: 5, 50: 9}
 CODE = 'zhern0206eskiy'
 PATTERN = r = re.compile('.{2}:.{2}-.{2}:.{2}')
-API_KEY = '40d1649f-0493-4b70-98ba-98533de7710b'
+COURIER_COORDINATES = "39.738827,47.225725"
 
 
 class CourierModel(pydantic.BaseModel):
@@ -418,6 +418,11 @@ def add_orders():
             order.orders_courier = 0
             order.user_id = current_user.id
             order.address = form.address.data
+            print(order.address)
+            print(check_address(order.address))
+            if not check_address(order.address):
+                return render_template('result.html', u=str("Некорректный адрес заказа, заказ отклонён"))
+
             for i in list(order_info['delivery_hours']):
                 dh = DH()
                 dh.order_id = order.id
@@ -551,6 +556,38 @@ def get_courier():
                                )
 
 
+@app.route('/admins/orders', methods=['POST', 'GET'])
+@login_required
+def orders_on_map_for_admin():
+    if current_user.user_type != 3:
+        return redirect('/')
+    db_sess = db_session.create_session()
+    points = []
+
+    max_distance = 0
+
+    for order in db_sess.query(Order).all():
+
+        if order.complete_time != "":
+            coordinates = get_coordinates(order.address)
+            points.append(coordinates + ",pm2rdl" + str(order.id))
+            max_distance = max(max_distance, count_distance(coordinates, COURIER_COORDINATES))
+
+    map_request = f"https://static-maps.yandex.ru/1.x/?apikey={API_KEY}&l=map&ll={COURIER_COORDINATES}" \
+                  f"&pt={'~'.join(points)}" \
+                  f"&size=650,450"
+
+    print(map_request)
+
+    print(map_request)
+    response = requests.get(map_request)
+    map_file = f"map_{current_user.id}_admin.png"
+    with open("static/" + map_file, "wb") as file:
+        file.write(response.content)
+
+    return render_template('show_map.html', title="Все заказы на карте", file=map_file, backlink="/")
+
+
 @app.route('/orders/assign', methods=["POST", 'GET'])
 @login_required
 def assign_orders():
@@ -660,7 +697,47 @@ def list_orders():
     courier_id = current_user.c_id
     ords = db_sess.query(Order).filter(Order.orders_courier == courier_id,
                                        Order.complete_time == '').all()
+    ords = list(ords)[::-1]
     return render_template('uncompleted_orders.html', title='Несделанные заказы', items=ords)
+
+
+@app.route('/orders/complete/map', methods=['POST', 'GET'])
+@login_required
+def orders_on_map():
+    if current_user.user_type != 2:
+        return redirect('/')
+    db_sess = db_session.create_session()
+    courier_id = current_user.c_id
+    points = ""
+
+    max_distance = 0
+
+    for order in db_sess.query(Order).filter(Order.orders_courier == courier_id).all():
+
+        if order.complete_time == "":
+            coordinates = get_coordinates(order.address)
+            points += ("~" + coordinates + ",pm2rdl" + str(order.id))
+            max_distance = max(max_distance, count_distance(coordinates, COURIER_COORDINATES))
+
+    courier_position = f"{COURIER_COORDINATES},round"
+
+    zoom = "&z=15"
+    if max_distance > 4:
+        zoom = ""
+
+    map_request = f"https://static-maps.yandex.ru/1.x/?apikey={API_KEY}&l=map&ll={COURIER_COORDINATES}" \
+                  f"&pt={courier_position}{points}" \
+                  f"&size=650,450{zoom}"
+
+    print(map_request)
+
+    print(map_request)
+    response = requests.get(map_request)
+    map_file = f"map_{courier_id}.png"
+    with open("static/" + map_file, "wb") as file:
+        file.write(response.content)
+
+    return render_template('show_map.html', title="Адрес и курьер", file=map_file, backlink="/orders/complete/list")
 
 
 @app.route('/couriers/delete', methods=["POST", 'GET'])
@@ -703,7 +780,7 @@ def change_about():
     return render_template('edit_user.html', form=form, title="Изменить резюме")
 
 
-@app.route('/orders/view/list', methods=['POST', 'GET'])
+@app.route('/orders/view', methods=['POST', 'GET'])
 @login_required
 def get_user_orders():
     user_id = current_user.id
@@ -720,8 +797,40 @@ def get_user_orders():
             courier_names.append("Пока что нет курьера")
 
     items = zip(orders, delivery_hours, courier_names)
+    items = list(items)
+    items.reverse()
 
     return render_template('existing_orders.html', title="Мои заказы", items=items)
+    # return jsonify({"orders": res, 'assign_time': str(assign_time)}), 200
+
+
+@app.route('/orders/view/<order_id>', methods=['POST', 'GET'])
+@login_required
+def get_map_of_order(order_id):
+    db_sess = db_session.create_session()
+    order = db_sess.query(Order).filter(Order.id == order_id).first()
+    coordinates = get_coordinates(order.address)
+
+    courier_position = ""
+    zoom = "&z=14"
+
+    if order.orders_courier:
+        courier_position = f"~{COURIER_COORDINATES},round"
+        distance = count_distance(coordinates, COURIER_COORDINATES)
+        if distance > 3:
+            zoom = ""
+
+    map_request = f"https://static-maps.yandex.ru/1.x/?apikey={API_KEY}&l=map&ll={coordinates}&" \
+                  f"pt={coordinates},pm2rdl{courier_position}" \
+                  f"&size=650,450{zoom}"
+
+    print(map_request)
+    response = requests.get(map_request)
+    map_file = f"map_{current_user.id}_{order_id}.png"
+    with open("static/" + map_file, "wb") as file:
+        file.write(response.content)
+
+    return render_template('show_map.html', title="Адрес и курьер", file=map_file, backlink="/orders/view")
     # return jsonify({"orders": res, 'assign_time': str(assign_time)}), 200
 
 

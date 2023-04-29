@@ -15,6 +15,7 @@
     {% else %}
     <h5>Доставлен в : </h5><p>В пути</p>
     {% endif %}
+    <a class="btn btn-success" style="width: 180px; height:80px" href="/orders/view/{{item[0].id}}">Открыть карту заказа</a>
 </div>
 {% endfor %}
 {% endblock %}

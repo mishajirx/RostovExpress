@@ -1,20 +1,26 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Невыполненные заказы</h1>
-{% for item in items %}
-<div>
-    <h2>Заказ {{item.id}}</h2>
-    <h5>Вес: </h5><p> {{ item.weight }}</p>
-    <h5>Регион: </h5><p> {{ item.region }}</p>
-    <h5>Адрес: </h5><p> {{ item.address}}</p>
-    {% if item.complete_time %}
-    <h5>Доставлен в : </h5><p>{{ item.complete_time }} по Гринвичу</p>
-    {% else %}
-    <h5>Доставлен в : </h5><p>В пути</p>
-    {% endif %}
-    <a class="btn btn-success" style="width: 180px; height:80px" href="/orders/complete/{{item.id}}">Выполнить
-        заказ</a>
-</div>
-{% endfor %}
+    <h1>Невыполненные заказы</h1>
+
+    <a class="btn btn-primary " href="/orders/complete/map">Карта заказов</a>
+
+    {% for item in items %}
+        <div>
+            <h2>Заказ {{ item.id }}</h2>
+            <h5>Вес: </h5>
+            <p> {{ item.weight }}</p>
+            <h5>Регион: </h5>
+            <p> {{ item.region }}</p>
+            <h5>Адрес: </h5>
+            <p> {{ item.address }}</p>
+            {% if item.complete_time %}
+                <h5>Доставлен в : </h5><p>{{ item.complete_time }} по Гринвичу</p>
+            {% else %}
+                <h5>Доставлен в : </h5><p>В пути</p>
+            {% endif %}
+            <a class="btn btn-success" style="width: 180px; height:80px" href="/orders/complete/{{ item.id }}">Выполнить
+                заказ</a>
+        </div>
+    {% endfor %}
 {% endblock %}
