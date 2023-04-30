@@ -43,6 +43,7 @@ kd = {10: 2, 15: 5, 50: 9}
 CODE = 'zhern0206eskiy'
 PATTERN = r = re.compile('.{2}:.{2}-.{2}:.{2}')
 COURIER_COORDINATES = "39.738827,47.225725"
+AUTOAPPROVING = True
 
 
 class CourierModel(pydantic.BaseModel):
@@ -159,8 +160,7 @@ class OrderModel(pydantic.BaseModel):
         return delivery_hours
 
 
-def log_event(event: str):
-    db_sess = db_session.create_session()
+def log_event(event: str, db_sess: db_session.Session):
     record = Record(
         event=event
     )
@@ -248,8 +248,9 @@ def register():
         )
         user.set_password(form.password.data)
         db_sess.add(user)
+        log_event(f"Пользователь {user.name} зарегистрировался на платформе", db_sess)
         db_sess.commit()
-        log_event(f"Пользователь {user.name} зарегистрировался на платформе")
+
         return redirect('/login')
     return render_template('register.html', title='Регистрация', form=form)
 
@@ -290,8 +291,9 @@ def make_admin(user_id):
             db_sess.delete(i)
         db_sess.delete(courier)
     user.user_type = 3
+    log_event(f"Пользователь {user.name} назначен админом", db_sess)
     db_sess.commit()
-    log_event(f"Пользователь {user.name} назначен админом")
+
     return render_template('result.html', u=str({"Status": 'Ok, now user is admin'}))
 
 
@@ -358,7 +360,7 @@ def add_couriers():
                 wh.hours = i
                 db_sess.add(wh)
             db_sess.add(courier)
-            log_event(f"Пользователь {user.name} назначен курьером")
+            log_event(f"Пользователь {user.name} назначен курьером", db_sess)
             res.append({"id": courier_info['courier_id']})
 
         if is_ok:
@@ -425,7 +427,7 @@ def add_orders():
                 dh.hours = i
                 db_sess.add(dh)
             db_sess.add(order)
-            log_event(f"Пользователь {current_user.name} сделал заказ на время {order_info['delivery_hours']}")
+            log_event(f"Пользователь {current_user.name} сделал заказ на время {order_info['delivery_hours']}", db_sess)
             res.append({"id": int(order_info['order_id'])})
 
         if is_ok:
@@ -632,7 +634,7 @@ def assign_orders():
     assign_time = t
     if '' == courier.last_delivery_t:
         courier.last_delivery_t = assign_time
-    log_event(f"Курьеру {current_user.name} назначены заказы с номерами {res} в {t}")
+    log_event(f"Курьеру {current_user.name} назначены заказы с номерами {res} в {t}", db_sess)
     db_sess.commit()
     return render_template('result.html', u=f"Назначено {len(res)} заказов")
     # return jsonify({"orders": res, 'assign_time': str(assign_time)}), 200
@@ -678,7 +680,7 @@ def complete_orders(order_id):
         courier.earnings += courier.last_pack_cost
         courier.last_pack_cost = 0
     db_sess.commit()
-    log_event(f"Курьер {current_user.name} выполнил заказ номер {order.id} в {order.complete_time}")
+    log_event(f"Курьер {current_user.name} выполнил заказ номер {order.id} в {order.complete_time}", db_sess)
     # return jsonify({'order_id': order.id}), 200
     return render_template('result.html', u=f"Заказ {order.id} выполнен")
 
@@ -714,6 +716,8 @@ def orders_on_map():
             coordinates = get_coordinates(order.address)
             points += ("~" + coordinates + ",pm2rdl" + str(order.id))
             max_distance = max(max_distance, count_distance(coordinates, COURIER_COORDINATES))
+
+    print(max_distance)
 
     courier_position = f"{COURIER_COORDINATES},round"
 
@@ -761,6 +765,29 @@ def change_about():
         print(user.user_type)
         if user.user_type < 2:
             user.user_type = 1
+            if AUTOAPPROVING:
+                courier_info = form_couriers_json([current_user.id], db_sess)['data'][0]
+
+                courier = Courier()
+                courier.id = courier_info['courier_id']
+                user = db_sess.query(User).filter(User.id == int(courier_info['user_id'])).first()
+                user.c_id = courier.id
+                user.user_type = 2
+
+                # print(user)
+                courier.maxw = c_type[courier_info['courier_type']]
+                for i in list((courier_info['regions'])):
+                    reg = Region()
+                    reg.courier_id = courier.id
+                    reg.region = i
+                    db_sess.add(reg)
+                for i in list(courier_info['working_hours']):
+                    wh = WH()
+                    wh.courier_id = courier.id
+                    wh.hours = i
+                    db_sess.add(wh)
+                db_sess.add(courier)
+                log_event(f"Пользователь {user.name} назначен курьером", db_sess)
             db_sess.commit()
             return redirect('/')
         db_sess.commit()
