@@ -1,17 +1,14 @@
-import requests
-from flask import Flask, make_response, jsonify, request, render_template, redirect
-import datetime
+from flask import Flask
 import re
-from pprint import pprint
 
 import pydantic
-from flask import jsonify, abort, request, Blueprint, render_template, redirect
+from flask import jsonify, request, render_template, redirect
 from flask_login import LoginManager, login_user, current_user, login_required, logout_user
 from typing import List, Optional
 import json
 from forms.new_order import MakeOrderForm
 from pydantic import validator
-from data import db_session, shop_api
+from data import shop_api
 from forms.registration import RegisterForm
 from data import db_session
 from data.couriers import Courier
@@ -23,27 +20,15 @@ from data.users import User
 from data.records import Record
 from forms.login import LoginForm
 from forms.what_couriers import NewCourierForm
-from forms.courier_edit import EditInfoForm
 from forms.homa_page import HomeForm
 from forms.user_edit import EditAboutForm
-from help_functions import *
+from data.help_functions import *
+from data.variables import *
 
-# комент
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
-x = 0
 login_manager = LoginManager()
 login_manager.init_app(app)
-courier_fields = {'courier_id', 'courier_type', 'regions', 'working_hours'}
-order_fields = {'order_id', 'weight', 'region', 'delivery_hours'}
-c_type = {'foot': 10, 'bike': 15, 'car': 50}
-translate_to_russian = {'foot': 'Пешеход', 'bike': "Велосипедист", 'car': "На машине"}
-rev_c_type = {10: 'foot', 15: 'bike', 50: 'car'}
-kd = {10: 2, 15: 5, 50: 9}
-CODE = 'zhern0206eskiy'
-PATTERN = r = re.compile('.{2}:.{2}-.{2}:.{2}')
-COURIER_COORDINATES = "39.738827,47.225725"
-AUTOAPPROVING = True
 
 
 class CourierModel(pydantic.BaseModel):
@@ -415,7 +400,7 @@ def add_orders():
             order.region = order_info['region']
             order.orders_courier = 0
             order.user_id = current_user.id
-            order.address = form.address.data
+            order.address = regions_table[order.region] + PRESENTATION_CITY + form.address.data
             print(order.address)
             print(check_address(order.address))
             if not check_address(order.address):
@@ -751,6 +736,37 @@ def list_couriers():
     return render_template('existing_couriers.html', title='Существующие курьеры', items=couriers)
 
 
+@app.route('/couriers/delete/<courier_id>', methods=["POST", 'GET'])
+@login_required
+def delete_couriers(courier_id):
+    # courier_id = request.json['courier_id']
+    if current_user.user_type < 3:
+        return redirect('/')
+    db_sess = db_session.create_session()
+    courier = db_sess.query(Courier).filter(Courier.id == courier_id).first()
+    if not courier:
+        return render_template('result.html', u=str({'message': 'no courier with this id'}))
+        # return jsonify({'message': 'no courier with this id'}), 400
+    user = db_sess.query(User).filter(User.c_id == courier_id).first()
+    user.c_id = None
+    user.user_type = 1
+    ords = db_sess.query(Order).filter(Order.orders_courier == courier_id,
+                                       Order.complete_time != '').all()
+    for i in ords:
+        i.orders_courier = 0
+    regions = db_sess.query(Region).filter(Region.courier_id == courier_id).all()
+    for i in regions:
+        db_sess.delete(i)
+    whs = db_sess.query(WH).filter(WH.courier_id == courier_id).all()
+    for i in whs:
+        db_sess.delete(i)
+    db_sess.delete(courier)
+
+    db_sess.commit()
+    return render_template('result.html', u=f"Курьер {courier_id} удален")
+    # return jsonify({"courier_id": courier_id}), 200
+
+
 @app.route('/users/edit', methods=['POST', 'GET'])
 @login_required
 def change_about():
@@ -863,37 +879,6 @@ def inside_about():
     if current_user.user_type > 1:
         return redirect('/')
     return render_template('user_info.html', title="О пользователе", about=current_user.about)
-
-
-@app.route('/couriers/delete/<courier_id>', methods=["POST", 'GET'])
-@login_required
-def delete_couriers(courier_id):
-    # courier_id = request.json['courier_id']
-    if current_user.user_type < 3:
-        return redirect('/')
-    db_sess = db_session.create_session()
-    courier = db_sess.query(Courier).filter(Courier.id == courier_id).first()
-    if not courier:
-        return render_template('result.html', u=str({'message': 'no courier with this id'}))
-        # return jsonify({'message': 'no courier with this id'}), 400
-    user = db_sess.query(User).filter(User.c_id == courier_id).first()
-    user.c_id = None
-    user.user_type = 1
-    ords = db_sess.query(Order).filter(Order.orders_courier == courier_id,
-                                       Order.complete_time != '').all()
-    for i in ords:
-        i.orders_courier = 0
-    regions = db_sess.query(Region).filter(Region.courier_id == courier_id).all()
-    for i in regions:
-        db_sess.delete(i)
-    whs = db_sess.query(WH).filter(WH.courier_id == courier_id).all()
-    for i in whs:
-        db_sess.delete(i)
-    db_sess.delete(courier)
-
-    db_sess.commit()
-    return render_template('result.html', u=f"Курьер {courier_id} удален")
-    # return jsonify({"courier_id": courier_id}), 200
 
 
 @app.route('/clear', methods=['POST', 'GET'])
