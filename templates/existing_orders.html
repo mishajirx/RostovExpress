@@ -1,22 +1,46 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Мои заказы</h1>
-{% for item in items %}
-<div class="container">
-    <h2>Заказ {{item[0].id}}</h2>
-    <h5>Вес: </h5><p> {{ item[0].weight }}</p>
-    <h5>Регион: </h5><p> {{ item[0].region }}</p>
-    <h5>Адрес: </h5><p> {{ item[0].address }}</p>
-    <h5>Время доставки заказа: </h5><p>{{ item[1].hours }}</p>
-    <h5>Курьер: </h5><p>{{ item[2] }}</p>
-    {% if item[0].complete_time %}
-    <h5>Доставлен в : </h5><p>{{ item[0].complete_time }} по Гринвичу</p>
-    {% else %}
-    <h5>Доставлен в : </h5><p>В пути</p>
-    {% endif %}
-    <a class="btn btn-success" style="width: 180px; height:80px" href="/orders/view/{{item[0].id}}">Открыть карту заказа</a>
-    <a class="btn btn-danger" style="width: 180px; height:80px" href="/orders/delete/{{item[0].id}}">Удалить заказ</a>
-</div>
-{% endfor %}
+    <h1>Мои заказы</h1>
+    <script src="../static/checkbox.js"></script>
+    {% for item in items %}
+        <div class="container">
+
+            <h2>Заказ {{ item[0].id }}</h2>
+
+            <div>
+                <input type="checkbox" id="view_info{{ item[0].id }}"
+                       onclick="myFunction(view_info{{ item[0].id }}.id, order_info{{ item[0].id }}.id)">
+                <label for="view_info_+{{ item[0].id }}">Информация о заказе</label>
+            </div>
+            {#                    <input type="checkbox" id="myCheck" onclick="myFunction()"> ХОЧУ БЫТЬ КУРЬЕРОМ#}
+
+
+            <div id="order_info{{ item[0].id }}" style="display:none">
+                <h5>Вес: </h5>
+                <p> {{ item[0].weight }}</p>
+                <h5>Регион: </h5>
+                <p> {{ item[0].region }}</p>
+                <h5>Адрес: </h5>
+                <p> {{ item[0].address }}</p>
+                <h5>Время доставки заказа: </h5>
+                <p>{{ item[1].hours }}</p>
+                <h5>Курьер: </h5>
+                <p>{{ item[2] }}</p>
+                {% if item[0].complete_time %}
+                    <h5>Доставлен в : </h5><p>{{ item[0].complete_time }} по Гринвичу</p>
+                {% else %}
+                    <h5>Доставлен в : </h5><p>В пути</p>
+                {% endif %}
+
+
+            </div>
+
+
+            <a class="btn btn-success" style="width: 180px; height:80px" href="/orders/view/{{ item[0].id }}">Открыть
+                карту заказа</a>
+            <a class="btn btn-danger" style="width: 180px; height:80px" href="/orders/delete/{{ item[0].id }}">Удалить
+                заказ</a>
+        </div>
+    {% endfor %}
 {% endblock %}

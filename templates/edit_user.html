@@ -8,9 +8,9 @@
 
         <p>
             {{ form.is_courier.label }}
-            {{ form.is_courier(type="checkbox", id="myCheck", onclick="myFunction()") }}
+            {{ form.is_courier(type="checkbox", id="myCheck", onclick="myFunction(\"myCheck\", \"courier_info\")") }}
         </p>
-        {#        <input type="checkbox" id="myCheck" onclick="myFunction()"> ХОЧУ БЫТЬ КУРЬЕРОМ#}
+{#        {        <input type="checkbox" id="myCheck" onclick="myFunction()"> ХОЧУ БЫТЬ КУРЬЕРОМ#}
 
 
         <div id="courier_info" style="display:none">

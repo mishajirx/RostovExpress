@@ -1,13 +1,16 @@
-function myFunction() {
+function myFunction(box_id, block_id) {
     // Get the checkbox
-    var checkBox = document.getElementById("myCheck");
+    console.log(box_id);
+    console.log(block_id);
+
+    let checkBox = document.getElementById(box_id);
     // Get the output text
-    var courier_info = document.getElementById("courier_info");
+    let block = document.getElementById(block_id);
 
     // If the checkbox is checked, display the output text
     if (checkBox.checked === true) {
-        courier_info.style.display = "block";
+        block.style.display = "block";
     } else {
-        courier_info.style.display = "none";
+        block.style.display = "none";
     }
 }
