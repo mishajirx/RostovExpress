@@ -360,6 +360,48 @@ def add_couriers():
     return render_template('available_couriers.html', title='Новый курьер', form=form)
 
 
+@app.route('/couriers/delete', methods=["POST", 'GET'])
+@login_required
+def list_couriers():
+    # courier_id = request.json['courier_id']
+    if current_user.user_type < 3:
+        return redirect('/')
+    db_sess = db_session.create_session()
+    couriers = db_sess.query(Courier).all()
+    return render_template('existing_couriers.html', title='Существующие курьеры', items=couriers)
+
+
+@app.route('/couriers/delete/<courier_id>', methods=["POST", 'GET'])
+@login_required
+def delete_couriers(courier_id):
+    # courier_id = request.json['courier_id']
+    if current_user.user_type < 3:
+        return redirect('/')
+    db_sess = db_session.create_session()
+    courier = db_sess.query(Courier).filter(Courier.id == courier_id).first()
+    if not courier:
+        return render_template('result.html', u=str({'message': 'no courier with this id'}))
+        # return jsonify({'message': 'no courier with this id'}), 400
+    user = db_sess.query(User).filter(User.c_id == courier_id).first()
+    user.c_id = None
+    user.user_type = 1
+    ords = db_sess.query(Order).filter(Order.orders_courier == courier_id,
+                                       Order.complete_time != '').all()
+    for i in ords:
+        i.orders_courier = 0
+    regions = db_sess.query(Region).filter(Region.courier_id == courier_id).all()
+    for i in regions:
+        db_sess.delete(i)
+    whs = db_sess.query(WH).filter(WH.courier_id == courier_id).all()
+    for i in whs:
+        db_sess.delete(i)
+    db_sess.delete(courier)
+
+    db_sess.commit()
+    return render_template('result.html', u=f"Курьер {courier_id} удален")
+    # return jsonify({"courier_id": courier_id}), 200
+
+
 @app.route('/orders', methods=["POST", 'GET'])
 @login_required
 def add_orders():
@@ -725,48 +767,6 @@ def orders_on_map():
     return render_template('show_map.html', title="Адрес и курьер", file=map_file, backlink="/orders/complete/list")
 
 
-@app.route('/couriers/delete', methods=["POST", 'GET'])
-@login_required
-def list_couriers():
-    # courier_id = request.json['courier_id']
-    if current_user.user_type < 3:
-        return redirect('/')
-    db_sess = db_session.create_session()
-    couriers = db_sess.query(Courier).all()
-    return render_template('existing_couriers.html', title='Существующие курьеры', items=couriers)
-
-
-@app.route('/couriers/delete/<courier_id>', methods=["POST", 'GET'])
-@login_required
-def delete_couriers(courier_id):
-    # courier_id = request.json['courier_id']
-    if current_user.user_type < 3:
-        return redirect('/')
-    db_sess = db_session.create_session()
-    courier = db_sess.query(Courier).filter(Courier.id == courier_id).first()
-    if not courier:
-        return render_template('result.html', u=str({'message': 'no courier with this id'}))
-        # return jsonify({'message': 'no courier with this id'}), 400
-    user = db_sess.query(User).filter(User.c_id == courier_id).first()
-    user.c_id = None
-    user.user_type = 1
-    ords = db_sess.query(Order).filter(Order.orders_courier == courier_id,
-                                       Order.complete_time != '').all()
-    for i in ords:
-        i.orders_courier = 0
-    regions = db_sess.query(Region).filter(Region.courier_id == courier_id).all()
-    for i in regions:
-        db_sess.delete(i)
-    whs = db_sess.query(WH).filter(WH.courier_id == courier_id).all()
-    for i in whs:
-        db_sess.delete(i)
-    db_sess.delete(courier)
-
-    db_sess.commit()
-    return render_template('result.html', u=f"Курьер {courier_id} удален")
-    # return jsonify({"courier_id": courier_id}), 200
-
-
 @app.route('/users/edit', methods=['POST', 'GET'])
 @login_required
 def change_about():
@@ -871,6 +871,23 @@ def get_map_of_order(order_id):
 
     return render_template('show_map.html', title="Адрес и курьер", file=map_file, backlink="/orders/view")
     # return jsonify({"orders": res, 'assign_time': str(assign_time)}), 200
+
+
+@app.route('/orders/delete/<order_id>', methods=["POST", "GET"])
+@login_required
+def delete_orders(order_id):
+    db_sess = db_session.create_session()
+    order = db_sess.query(Order).filter(Order.id == order_id).first()
+    if not order:
+        return render_template('result.html', u=str({'message': 'no order with this id'}))
+        # return jsonify({'message': 'no order with this id'}), 400
+    db_sess.delete(order)
+
+    log_event(f"Заказ {order_id} был удалён", db_sess)
+
+    db_sess.commit()
+    return render_template('result.html', u=f"Заказ {order_id} удален")
+    # return jsonify({"order_id": order_id}), 200
 
 
 @app.route('/users/get', methods=['POST', 'GET'])
