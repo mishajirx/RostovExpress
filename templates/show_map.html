@@ -6,6 +6,6 @@
         <div>
             <img src={{ url_for("static", filename=file) }}>
         </div>
-        <a class="btn btn-success" style="width: 180px; height:80px" href={{ backlink }}>Назад</a>
+        <a class="btn btn-success" style="width: 180px; height:80px" href=javascript:history.back()>Назад</a>
     </div>
 {% endblock %}

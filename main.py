@@ -173,6 +173,24 @@ def form_couriers_json(id_list: list, db_sess):
         return {'data': False}
 
 
+def collect_info_about_orders(orders: list[Order], db_sess: db_session.Session, ) -> list[tuple[Order, str, str, str]]:
+    delivery_hours = [db_sess.query(DH).filter(DH.order_id == order.id).all()[0] for order in orders]
+    courier_names = []
+    client_names = []
+    for order in orders:
+        list_of_couriers = db_sess.query(User).filter(User.c_id == order.orders_courier).all()
+        if list_of_couriers:
+            courier_names.append(f"{list_of_couriers[0].name}, телефон: {list_of_couriers[0].phone_number}")
+        else:
+            courier_names.append("Пока что нет курьера")
+        client = db_sess.query(User).filter(User.id == order.user_id).first()
+        client_names.append(client.name + ", " + client.phone_number)
+
+    items = list(zip(orders, delivery_hours, courier_names, client_names))
+
+    return items
+
+
 @login_manager.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
@@ -715,15 +733,17 @@ def complete_orders(order_id):
 @app.route('/orders/complete/list', methods=['POST', 'GET'])
 @login_required
 def list_orders():
-    if current_user.user_type != 2:
+    if current_user.user_type < 2:
         return redirect('/')
-    # req_json = request.json
-    db_sess = db_session.create_session()
     courier_id = current_user.c_id
-    ords = db_sess.query(Order).filter(Order.orders_courier == courier_id,
-                                       Order.complete_time == '').all()
-    ords = list(ords)[::-1]
-    return render_template('uncompleted_orders.html', title='Несделанные заказы', items=ords)
+    db_sess = db_session.create_session()
+
+    orders = db_sess.query(Order).filter(Order.orders_courier == courier_id).filter(Order.complete_time == '').all()
+
+    items = collect_info_about_orders(orders, db_sess)
+    items.reverse()
+
+    return render_template('uncompleted_orders.html', title='Несделанные заказы', items=items)
 
 
 @app.route('/orders/complete/map', methods=['POST', 'GET'])
@@ -743,8 +763,6 @@ def orders_on_map():
             coordinates = get_coordinates(order.address)
             points += ("~" + coordinates + ",pm2rdl" + str(order.id))
             max_distance = max(max_distance, count_distance(coordinates, COURIER_COORDINATES))
-
-    print(max_distance)
 
     courier_position = f"{COURIER_COORDINATES},round"
 
@@ -823,24 +841,16 @@ def change_about():
 @login_required
 def get_user_orders():
     user_id = current_user.id
-    # courier_id = request.json['courier_id']
     db_sess = db_session.create_session()
-    orders = db_sess.query(Order).filter(Order.user_id == user_id).all()
-    delivery_hours = [db_sess.query(DH).filter(DH.order_id == order.id).all()[0] for order in orders]
-    courier_names = []
-    for order in orders:
-        list_of_couriers = db_sess.query(User).filter(User.c_id == order.orders_courier).all()
-        if list_of_couriers:
-            courier_names.append(f"{list_of_couriers[0].name}, телефон: {list_of_couriers[0].phone_number}")
-        else:
-            courier_names.append("Пока что нет курьера")
-
-    items = zip(orders, delivery_hours, courier_names)
-    items = list(items)
+    orders = []
+    if current_user.user_type < 3:
+        orders = db_sess.query(Order).filter(Order.user_id == user_id).all()
+    else:
+        orders = db_sess.query(Order).all()
+    items = collect_info_about_orders(orders, db_sess)
     items.reverse()
 
     return render_template('existing_orders.html', title="Мои заказы", items=items)
-    # return jsonify({"orders": res, 'assign_time': str(assign_time)}), 200
 
 
 @app.route('/orders/view/<order_id>', methods=['POST', 'GET'])
@@ -869,8 +879,7 @@ def get_map_of_order(order_id):
     with open("static/" + map_file, "wb") as file:
         file.write(response.content)
 
-    return render_template('show_map.html', title="Адрес и курьер", file=map_file, backlink="/orders/view")
-    # return jsonify({"orders": res, 'assign_time': str(assign_time)}), 200
+    return render_template('show_map.html', title="Адрес и курьер", file=map_file)
 
 
 @app.route('/orders/delete/<order_id>', methods=["POST", "GET"])
