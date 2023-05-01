@@ -1,5 +1,6 @@
 import datetime
 from math import sqrt
+from data.orders import Order
 
 import requests
 
@@ -51,24 +52,19 @@ def check_address(address: str):
     return True
 
 
-def choose_orders(ords: list, maxw: int) -> list:
-    try:
-        n, w = len(ords), maxw * 100
-        a = list(map(lambda x: int(x * 100), ords))
-        c = list(map(lambda x: int(x * 100), ords))
-        dp = [[(0, [])] + [(-1, [])] * w for i in range(n)]
-        dp[0][0] = (0, [])
-        dp[0][a[0]] = (c[0], [1])
-        for i in range(1, n):
-            for j in range(1, w + 1):
-                dp[i][j] = dp[i - 1][j]
-                if j - a[i] >= 0 and dp[i - 1][j - a[i]][0] != - 1:
-                    if dp[i][j][0] < dp[i - 1][j - a[i]][0] + c[i]:
-                        dp[i][j] = (dp[i - 1][j - a[i]][0] + c[i], dp[i - 1][j - a[i]][1] + [i + 1])
-        ans = max(dp[-1])[1]
-        return list(map(lambda x: x - 1, ans))
-    except IndexError:
-        return []
+def choose_orders(ords: list[Order], max_weight: int) -> list[Order]:
+    n = len(ords)
+    answer = []
+    current_weight = 0
+    ords.sort(key=lambda order: order.weight)
+    i = 0
+    for order in ords:
+        if order.weight + current_weight <= max_weight:
+            answer.append(order)
+            current_weight += order.weight
+        print(current_weight, max_weight)
+
+    return answer
 
 
 def from_few_fields_to_json(t, rs, whs):

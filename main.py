@@ -556,9 +556,8 @@ def edit_courier():
         i.orders_courier = 0
     db_sess.commit()
     courier.currentw = 0
-    inds = choose_orders(list(map(lambda u: u.weight, ords)), courier.maxw)
-    for i in inds:
-        order = ords[i]
+    orders = choose_orders(list(ords), courier.maxw)
+    for order in orders:
         courier.currentw += order.weight
         order.orders_courier = courier_id
     db_sess.commit()
@@ -669,9 +668,8 @@ def assign_orders():
     ords = list(
         filter(lambda u: is_t_ok(db_sess.query(DH).filter(DH.order_id == u.id).all(), courier_wh),
                ords))
-    inds = choose_orders(list(map(lambda u: u.weight, ords)), courier.maxw)
-    for i in inds:
-        order = ords[i]
+    orders = choose_orders(list(ords), courier.maxw)
+    for order in orders:
         courier.currentw += order.weight
         order.orders_courier = courier_id
 
