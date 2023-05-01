@@ -783,7 +783,7 @@ def orders_on_map():
     courier_position = f"{COURIER_COORDINATES},round"
 
     zoom = "&z=15"
-    if max_distance > 4:
+    if max_distance > 1:
         zoom = ""
 
     map_request = f"https://static-maps.yandex.ru/1.x/?apikey={API_KEY}&l=map&ll={COURIER_COORDINATES}" \
@@ -882,7 +882,7 @@ def get_map_of_order(order_id):
     if order.orders_courier:
         courier_position = f"~{COURIER_COORDINATES},round"
         distance = count_distance(coordinates, COURIER_COORDINATES)
-        if distance > 3:
+        if distance > 1:
             zoom = ""
 
     map_request = f"https://static-maps.yandex.ru/1.x/?apikey={API_KEY}&l=map&ll={coordinates}&" \
