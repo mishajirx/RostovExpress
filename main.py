@@ -949,6 +949,11 @@ def clear():
     # return jsonify({'status': 'all data cleared'}), 201
 
 
+@app.route("/donations")
+def donate():
+    return render_template("donations.html")
+
+
 def main():
     db_session.global_init("db/couriers.db")
     app.register_blueprint(shop_api.blueprint)
