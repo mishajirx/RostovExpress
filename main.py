@@ -303,7 +303,7 @@ def make_admin(user_id):
 @app.route("/history", methods=["GET"])
 @login_required
 def view_history():
-    if (current_user.user_type != 3):
+    if current_user.user_type != 3:
         return redirect('/')
     db_sess = db_session.create_session()
     events = db_sess.query(Record).all()
@@ -513,7 +513,13 @@ def edit_courier():
         if k == 'courier_type':
             courier.maxw = c_type[v]
         elif k == 'regions':
-            db_sess.query(Region).filter(Region.courier_id == courier.id).delete()
+            v = set(v)
+            regions = db_sess.query(Region).filter(Region.courier_id == courier.id).all()
+            for reg in regions:
+                if reg.region not in v:
+                    db_sess.delete(reg)
+                else:
+                    v.discard(reg.region)
             for i in v:
                 reg = Region()
                 reg.courier_id = courier.id
