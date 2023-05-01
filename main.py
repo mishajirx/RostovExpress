@@ -461,7 +461,11 @@ def add_orders():
             order.region = order_info['region']
             order.orders_courier = 0
             order.user_id = current_user.id
-            order.address = regions_table[order.region] + PRESENTATION_CITY + form.address.data
+            order.address = regions_table[order.region] + ' '
+            city_written = ("г." in form.address.data) or ("город" in form.address.data)
+            if not city_written:
+                order.address += PRESENTATION_CITY
+            order.address += form.address.data
             print(order.address)
             print(check_address(order.address))
             if not check_address(order.address):
