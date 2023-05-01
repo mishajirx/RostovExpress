@@ -381,21 +381,22 @@ def add_couriers():
 @app.route('/couriers/delete', methods=["POST", 'GET'])
 @login_required
 def list_couriers():
-    # courier_id = request.json['courier_id']
     if current_user.user_type < 3:
         return redirect('/')
     db_sess = db_session.create_session()
-    couriers = db_sess.query(Courier).all()
-    return render_template('existing_couriers.html', title='Существующие курьеры', items=couriers)
+    users = db_sess.query(User).filter(User.user_type == 2).all()
+    return render_template('existing_couriers.html', title='Существующие курьеры', items=users)
 
 
-@app.route('/couriers/delete/<courier_id>', methods=["POST", 'GET'])
+@app.route('/couriers/delete/<user_id>', methods=["POST", 'GET'])
 @login_required
-def delete_couriers(courier_id):
+def delete_couriers(user_id):
     # courier_id = request.json['courier_id']
     if current_user.user_type < 3:
         return redirect('/')
     db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.id == user_id).first()
+    courier_id = user.c_id
     courier = db_sess.query(Courier).filter(Courier.id == courier_id).first()
     if not courier:
         return render_template('result.html', u=str({'message': 'no courier with this id'}))
@@ -755,7 +756,7 @@ def list_orders():
 @app.route('/orders/complete/map', methods=['POST', 'GET'])
 @login_required
 def orders_on_map():
-    if current_user.user_type != 2:
+    if current_user.user_type < 2:
         return redirect('/')
     db_sess = db_session.create_session()
     courier_id = current_user.c_id
@@ -763,7 +764,14 @@ def orders_on_map():
 
     max_distance = 0
 
-    for order in db_sess.query(Order).filter(Order.orders_courier == courier_id).all():
+    orders = []
+
+    if current_user.user_type == 3:
+        orders = db_sess.query(Order).all()
+    else:
+        orders = db_sess.query(Order).filter(Order.orders_courier == courier_id).all()
+
+    for order in orders:
 
         if order.complete_time == "":
             coordinates = get_coordinates(order.address)

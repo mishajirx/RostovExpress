@@ -4,8 +4,8 @@
 <h1>Курьеры в системе</h1>
 {% for item in items %}
 <div>
-    <h2>Курьер {{item.id}}</h2>
-    <a class="btn btn-success" style="width: 180px; height:80px" href="/couriers/delete/{{item.id}}">Удалить
+    <h2>Курьер - {{item.name}}</h2>
+    <a class="btn btn-danger" style="width: 180px; height:80px" href="/couriers/delete/{{item.id}}">Удалить
         курьера</a>
 </div>
 {% endfor %}
