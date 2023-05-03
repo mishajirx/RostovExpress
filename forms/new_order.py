@@ -3,10 +3,11 @@ from wtforms import SubmitField, StringField, IntegerField, FloatField, TimeFiel
 from wtforms.validators import DataRequired, ValidationError
 
 from data.help_functions import check_address
+from data.variables import regions_table
 
 
 def validate_region(form, field):
-    if not ((1 <= field.data <= 79) or (field.data in [83, 86, 87, 89])):
+    if field.data in regions_table.keys():
         raise ValidationError("Регион должен существовать в РФ")
 
 
