@@ -426,70 +426,66 @@ def delete_couriers(user_id):
 def add_orders():
     form = MakeOrderForm()
     if form.validate_on_submit():
-        req_json = []
         db_sess = db_session.create_session()
         res = []
         bad_id = []
         is_ok = True
         already_in_base = [i.id for i in db_sess.query(Order).all()]
-        req_json.append({'order_id': max(already_in_base + [0]) + 1, 'weight': form.weight.data,
-                         'region': form.region.data,
-                         'delivery_hours': [parse_time(form.workhours_start.data) + '-' + parse_time(
-                             form.workhours_end.data)], })
-        # print(req_json[0]['delivery_hours'])
-        for order_info in req_json:
-            flag = False
-            error_ans = []
-            try:
-                OrderModel(**order_info, base=already_in_base)
-            except pydantic.ValidationError as e:
-                error_ans += json.loads(e.json())
-                flag = True
-            if order_info['order_id'] in already_in_base:
-                error_ans += [
-                    {"loc": ["id"], "msg": "Invalid id: There is a order with the same id",
-                     "type": "value_error"}
-                ]
-            if flag or order_info['order_id'] in already_in_base:
-                is_ok = False
-                bad_id.append({"id": int(order_info['order_id']), 'errors': error_ans})
-            if not is_ok:
-                continue
-            order = Order()
-            order.id = order_info['order_id']
-            order.weight = order_info['weight']
-            order.region = order_info['region']
-            order.orders_courier = 0
-            order.user_id = current_user.id
-            order.address = regions_table[order.region] + ' '
-            city_written = ("г." in form.address.data) or ("город" in form.address.data)
-            if not city_written:
-                order.address += PRESENTATION_CITY
-            order.address += form.address.data
-            print(order.address)
-            print(check_address(order.address))
-            if not check_address(order.address):
-                return render_template('result.html', u=str("Некорректный адрес заказа, заказ отклонён"))
 
-            for i in list(order_info['delivery_hours']):
-                dh = DH()
-                dh.order_id = order.id
-                dh.hours = i
-                db_sess.add(dh)
-            db_sess.add(order)
-            log_event(f"Пользователь {current_user.name} сделал заказ на время {order_info['delivery_hours']}", db_sess)
-            res.append({"id": int(order_info['order_id'])})
+        order_info = {'order_id': max(already_in_base + [0]) + 1, 'weight': form.weight.data,
+                      'region': form.region.data,
+                      'delivery_hours': [parse_time(form.workhours_start.data) + '-' + parse_time(
+                          form.workhours_end.data)], }
+        # print(req_json[0]['delivery_hours'])
+        order_id = -1
+
+        flag = False
+        error_ans = []
+        try:
+            OrderModel(**order_info, base=already_in_base)
+        except pydantic.ValidationError as e:
+            error_ans += json.loads(e.json())
+            flag = True
+        if order_info['order_id'] in already_in_base:
+            error_ans += [
+                {"loc": ["id"], "msg": "Invalid id: There is a order with the same id",
+                 "type": "value_error"}
+            ]
+        if flag or order_info['order_id'] in already_in_base:
+            is_ok = False
+            bad_id.append({"id": int(order_info['order_id']), 'errors': error_ans})
+
+        order = Order()
+        order.id = order_info['order_id']
+        order.weight = order_info['weight']
+        order.region = order_info['region']
+        order.orders_courier = 0
+        order.user_id = current_user.id
+        order.address = regions_table[order.region] + ' '
+        city_written = ("г." in form.address.data) or ("город" in form.address.data)
+        if not city_written:
+            order.address += PRESENTATION_CITY
+        order.address += form.address.data
+        print(order.address)
+        print(check_address(order.address))
+        if not check_address(order.address):
+            return render_template('result.html', u=str("Некорректный адрес заказа, заказ отклонён"))
+
+        for i in list(order_info['delivery_hours']):
+            dh = DH()
+            dh.order_id = order.id
+            dh.hours = i
+            db_sess.add(dh)
+        db_sess.add(order)
+        log_event(f"Пользователь {current_user.name} сделал заказ на время {order_info['delivery_hours']}", db_sess)
+        res.append({"id": int(order_info['order_id'])})
 
         if is_ok:
             db_sess.commit()
-            return render_template('result.html', u=str("Заказ создан!"))
-            # return jsonify({"orders": res}), 201
-        # pprint({"validation_error": bad_id})
-        # print('-------------------------------------------------------------------------')
+            return render_template('result.html', u=str(
+                f"Заказ номер {order.id} создан. Заказ доступен для просмотра в разделе \"Мои заказы\"!"))
+        return render_template('result.html', u=str("Данные указаны некорректно"))
 
-        # из всех ошибок сейчас можно только указать неверный вес
-        return render_template('result.html', u=str("Вес не лежит в пределах от 0.01 до 50"))
-        # return jsonify({"validation_error": bad_id}), 400
     return render_template('new_order.html', title='Новый заказ', form=form)
 
 
