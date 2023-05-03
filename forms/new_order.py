@@ -7,7 +7,7 @@ from data.help_functions import check_address
 
 def validate_region(form, field):
     if not ((1 <= field.data <= 79) or (field.data in [83, 86, 87, 89])):
-        raise ValidationError("Регион должен существовать")
+        raise ValidationError("Регион должен существовать в РФ")
 
 
 def validate_weight(form, field):
