@@ -45,6 +45,10 @@ def get_coordinates(address: str) -> (int, int):
 
 
 def check_address(address: str):
+    symbols = ['&', "=", "$", ";", "?"]
+    for s in symbols:
+        if s in address:
+            return False
     try:
         get_coordinates(address)
     except:
@@ -53,11 +57,9 @@ def check_address(address: str):
 
 
 def choose_orders(ords: list[Order], max_weight: int) -> list[Order]:
-    n = len(ords)
     answer = []
     current_weight = 0
     ords.sort(key=lambda order: order.weight)
-    i = 0
     for order in ords:
         if order.weight + current_weight <= max_weight:
             answer.append(order)
