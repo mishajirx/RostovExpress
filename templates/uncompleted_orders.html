@@ -3,6 +3,15 @@
 {% block content %}
     <h1>Мои заказы</h1>
     <script src="../../static/checkbox.js"></script>
+    <script src="../../static/change_user_flag.js"></script>
+
+    <a class="btn btn-info " href="/change_flag">
+        {% if current_user.show_completed %}
+            Скрыть выполненные заказы
+        {% else %}
+            Показать выполненные заказы
+        {% endif %}
+    </a>
 
     <a class="btn btn-primary " href="/orders/complete/map">Карта всех заказов</a>
 
@@ -33,7 +42,7 @@
                 <p>{{ item[3] }}</p>
 
                 {% if item[0].complete_time %}
-                    <h5>Доставлен в  </h5><p>{{ item[0].complete_time }} по Гринвичу</p>
+                    <h5>Доставлен в </h5><p>{{ item[0].complete_time }} по Гринвичу</p>
                 {% else %}
                     <h5>Заказ в пути</h5>
                 {% endif %}

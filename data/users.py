@@ -15,11 +15,12 @@ class User(SqlAlchemyBase, UserMixin):
     email = sqlalchemy.Column(sqlalchemy.String,
                               index=True, unique=True, nullable=True)
     phone_number = sqlalchemy.Column(sqlalchemy.String,
-                              index=True, unique=True, nullable=True)
+                                     index=True, unique=True, nullable=True)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
-    created_date = sqlalchemy.Column(sqlalchemy.DateTime,default=datetime.datetime.now)
+    created_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
     user_type = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     c_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('couriers.id'), nullable=True)
+    show_completed = sqlalchemy.Column(sqlalchemy.Boolean, default=0)
     sqlalchemy.orm.relation('Courier')
 
     def set_password(self, password):

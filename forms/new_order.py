@@ -7,7 +7,7 @@ from data.variables import regions_table
 
 
 def validate_region(form, field):
-    if field.data in regions_table.keys():
+    if field.data not in regions_table.keys():
         raise ValidationError("Регион должен существовать в РФ")
 
 

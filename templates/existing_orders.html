@@ -4,6 +4,15 @@
     <h1>Мои заказы</h1>
     <script src="../static/checkbox.js"></script>
 
+    <a class="btn btn-info " href="/change_flag">
+    {% if current_user.show_completed %}
+        Скрыть выполненные заказы
+    {% else %}
+        Показать выполненные заказы
+    {% endif %}
+    </a>
+
+
     {% if current_user.user_type == 3 %}
 
         <a class="btn btn-primary " href="/orders/complete/map">Карта всех заказов</a>

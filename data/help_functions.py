@@ -1,8 +1,14 @@
 import datetime
 from math import sqrt
+
+from data import db_session
+from data.couriers import Courier
+from data.deliveryhours import DH
 from data.orders import Order
 
 import requests
+
+from data.users import User
 
 API_KEY = '40d1649f-0493-4b70-98ba-98533de7710b'
 
@@ -102,9 +108,49 @@ def parse_from_about(about: str) -> (str, int, datetime.time, datetime.time):
     return type_of_courier, region, start_time, end_time
 
 
-def count_distance(c1: str, c2: str) -> int:
+def count_distance(c1: str, c2: str) -> float:
     x1, y1 = map(float, c1.split(','))
     x2, y2 = map(float, c2.split(','))
     dx = x1 - x2
     dy = y1 - y2
     return sqrt(dx ** 2 + dy ** 2) * 111
+
+
+def collect_info_about_orders(orders: list[Order], db_sess: db_session.Session, flag) \
+        -> list[tuple[Order, str, str, str]]:
+    orders = list(filter(lambda item: item.complete_time == "" or flag, orders))
+    delivery_hours = [db_sess.query(DH).filter(DH.order_id == order.id).all()[0] for order in orders]
+    courier_names = []
+    client_names = []
+    for order in orders:
+        list_of_couriers = db_sess.query(User).filter(User.c_id == order.orders_courier).all()
+        if list_of_couriers:
+            courier_names.append(f"{list_of_couriers[0].name}, телефон: {list_of_couriers[0].phone_number}")
+        else:
+            courier_names.append("Пока что нет курьера")
+        client = db_sess.query(User).filter(User.id == order.user_id).first()
+        client_names.append(client.name + ", " + client.phone_number)
+
+    items = list(zip(orders, delivery_hours, courier_names, client_names))
+
+    return items
+
+
+def form_couriers_json(id_list: list, db_sess):
+    try:
+        ans = []
+        for i in id_list:
+            candidate = db_sess.query(User).filter(User.id == i).first()
+            t, rs, whs = candidate.about.split(';')
+            new_id = max([j.id for j in db_sess.query(Courier).all()] + [0]) + 1
+            ans.append({
+                'courier_id': new_id,
+                'courier_type': t,
+                'regions': list(map(int, rs.split(','))),
+                'working_hours': whs.split(','),
+                'user_id': i
+            })
+        # print(ans)
+        return {'data': ans}
+    except Exception:
+        return {'data': False}

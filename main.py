@@ -153,44 +153,6 @@ def log_event(event: str, db_sess: db_session.Session):
     db_sess.commit()
 
 
-def form_couriers_json(id_list: list, db_sess):
-    try:
-        ans = []
-        for i in id_list:
-            candidate = db_sess.query(User).filter(User.id == i).first()
-            t, rs, whs = candidate.about.split(';')
-            new_id = max([j.id for j in db_sess.query(Courier).all()] + [0]) + 1
-            ans.append({
-                'courier_id': new_id,
-                'courier_type': t,
-                'regions': list(map(int, rs.split(','))),
-                'working_hours': whs.split(','),
-                'user_id': i
-            })
-        # print(ans)
-        return {'data': ans}
-    except Exception:
-        return {'data': False}
-
-
-def collect_info_about_orders(orders: list[Order], db_sess: db_session.Session, ) -> list[tuple[Order, str, str, str]]:
-    delivery_hours = [db_sess.query(DH).filter(DH.order_id == order.id).all()[0] for order in orders]
-    courier_names = []
-    client_names = []
-    for order in orders:
-        list_of_couriers = db_sess.query(User).filter(User.c_id == order.orders_courier).all()
-        if list_of_couriers:
-            courier_names.append(f"{list_of_couriers[0].name}, телефон: {list_of_couriers[0].phone_number}")
-        else:
-            courier_names.append("Пока что нет курьера")
-        client = db_sess.query(User).filter(User.id == order.user_id).first()
-        client_names.append(client.name + ", " + client.phone_number)
-
-    items = list(zip(orders, delivery_hours, courier_names, client_names))
-
-    return items
-
-
 @login_manager.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
@@ -617,7 +579,7 @@ def orders_on_map_for_admin():
 
     for order in db_sess.query(Order).all():
 
-        if order.complete_time != "":
+        if order.complete_time != "" or current_user.show_completed:
             coordinates = get_coordinates(order.address)
             points.append(coordinates + ",pm2rdl" + str(order.id))
             max_distance = max(max_distance, count_distance(coordinates, COURIER_COORDINATES))
@@ -743,9 +705,10 @@ def list_orders():
     courier_id = current_user.c_id
     db_sess = db_session.create_session()
 
-    orders = db_sess.query(Order).filter(Order.orders_courier == courier_id).filter(Order.complete_time == '').all()
+    orders = db_sess.query(Order).filter(Order.orders_courier == courier_id).all()
 
-    items = collect_info_about_orders(orders, db_sess)
+    items = collect_info_about_orders(orders, db_sess, current_user.show_completed)
+
     items.reverse()
 
     return render_template('uncompleted_orders.html', title='Несделанные заказы', items=items)
@@ -771,7 +734,7 @@ def orders_on_map():
 
     for order in orders:
 
-        if order.complete_time == "":
+        if order.complete_time == "" or current_user.show_completed:
             coordinates = get_coordinates(order.address)
             points += ("~" + coordinates + ",pm2rdl" + str(order.id))
             max_distance = max(max_distance, count_distance(coordinates, COURIER_COORDINATES))
@@ -859,7 +822,7 @@ def get_user_orders():
         orders = db_sess.query(Order).filter(Order.user_id == user_id).all()
     else:
         orders = db_sess.query(Order).all()
-    items = collect_info_about_orders(orders, db_sess)
+    items = collect_info_about_orders(orders, db_sess, current_user.show_completed)
     items.reverse()
 
     return render_template('existing_orders.html', title="Мои заказы", items=items)
@@ -950,6 +913,16 @@ def clear():
 @app.route("/donations")
 def donate():
     return render_template("donations.html")
+
+
+@app.route("/change_flag")
+@login_required
+def change_show_completed_flag():
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.id == current_user.id).first()
+    user.show_completed = (user.show_completed + 1) % 2
+    db_sess.commit()
+    return redirect(request.referrer)
 
 
 def main():
