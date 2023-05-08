@@ -10,7 +10,7 @@
             Показать выполненные заказы
         {% endif %}
     </a>
-
+    <br><br>
 
     {% if current_user.user_type == 3 %}
 
@@ -21,7 +21,7 @@
     {% for item in items %}
         <div class="container">
 
-            <h2>Заказ {{ item[0].id }} -
+            <h3>Заказ {{ item[0].id }} -
                 {% if item[2] == "" %}
                     Новый
                 {% elif item[0].complete_time == "" %}
@@ -30,12 +30,12 @@
                     Доставлен
                 {% endif %}
 
-            </h2>
+            </h3>
 
 
             <details>
                 <summary>
-                    <strong>Информация о заказе</strong>
+                    Информация о заказе
                 </summary>
                 <div id="order_info{{ item[0].id }}">
                     <h5>Вес </h5>

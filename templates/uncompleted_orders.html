@@ -13,10 +13,12 @@
 
     <a class="btn btn-primary " href="/orders/complete/map">Карта всех заказов</a>
 
+    <br><br>
+
     {% for item in items %}
         <div class="container">
 
-            <h2>Заказ {{ item[0].id }} -
+            <h3>Заказ {{ item[0].id }} -
                 {% if item[2] == "" %}
                     Новый
                 {% elif item[0].complete_time == "" %}
@@ -25,12 +27,12 @@
                     Доставлен
                 {% endif %}
 
-            </h2>
+            </h3>
 
 
             <details>
                 <summary>
-                    <strong>Информация о заказе</strong>
+                    Информация о заказе
                 </summary>
                 <div id="order_info{{ item[0].id }}">
                     <h5>Вес </h5>
