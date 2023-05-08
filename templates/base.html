@@ -14,10 +14,9 @@
     <nav class="navbar navbar-light bg-light">
         <a class="navbar-brand" href="#">РостовExpress</a>
         {% if current_user.is_authenticated %}
-            <p>
-                <a class="btn btn-primary " href="/">Домой</a>
-                <a class="navbar-brand" href="/logout">{{ current_user.name }}</a>
-            </p>
+
+            <a class="navbar-brand" href="/logout">{{ current_user.name }}</a>
+            <a class="btn btn-outline-secondary" style="font-size: medium; text-align: justify" href="/">Домой</a>
 
         {% else %}
             <p>
