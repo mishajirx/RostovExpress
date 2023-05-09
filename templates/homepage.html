@@ -38,8 +38,13 @@
                 {% if current_user.user_type < 3 %}
                     <a class="btn btn-success" style="width: 180px; height:80px;" href="/orders">Сделать
                         заказ</a>
-                    <a class="btn btn-success" style="width: 180px; height:80px" href="/users/edit">Редактировать
-                        информацию</a>
+                    {% if current_user.user_type < 2 %}
+                        <a class="btn btn-success" style="width: 180px; height:80px" href="/users/edit">Подать
+                            заявку</a>
+                    {% else %}
+                        <a class="btn btn-success" style="width: 180px; height:80px" href="/users/edit">Редактировать
+                            информацию</a>
+                    {% endif %}
                     <a class="btn btn-success" style="width: 180px; height:80px" href="/orders/view">Мои
                         заказы</a>
                 {% endif %}
