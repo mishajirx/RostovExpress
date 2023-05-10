@@ -425,7 +425,7 @@ def add_orders():
         order.user_id = current_user.id
         order.address = regions_table[order.region] + ' '
         city_written = ("г." in form.address.data) or ("город" in form.address.data)
-        if not city_written:
+        if not city_written and order.region == 61:
             order.address += PRESENTATION_CITY
         order.address += form.address.data
         print(order.address)
@@ -882,32 +882,32 @@ def inside_about():
     return render_template('user_info.html', title="О пользователе", about=current_user.about)
 
 
-@app.route('/clear', methods=['POST', 'GET'])
-@login_required
-def clear():
-    # if request.json['code'] != CODE:
-    #     return jsonify({"error": "wrong code"}), 400
-    logout_user()
-    db_sess = db_session.create_session()
-    db_sess.query(Courier).delete()
-    db_sess.query(Order).delete()
-    db_sess.query(Region).delete()
-    db_sess.query(WH).delete()
-    db_sess.query(DH).delete()
-    db_sess.query(User).delete()
-    db_sess.query(Record).delete()
-    db_sess.commit()
-    user = User(
-        name='admin',
-        phone_number="8 (777) 777 7777",
-        about='main admin',
-        user_type=3
-    )
-    user.set_password('admin')
-    db_sess.add(user)
-    db_sess.commit()
-    return redirect('/')
-    # return jsonify({'status': 'all data cleared'}), 201
+# @app.route('/clear', methods=['POST', 'GET'])
+# @login_required
+# def clear():
+#     # if request.json['code'] != CODE:
+#     #     return jsonify({"error": "wrong code"}), 400
+#     logout_user()
+#     db_sess = db_session.create_session()
+#     db_sess.query(Courier).delete()
+#     db_sess.query(Order).delete()
+#     db_sess.query(Region).delete()
+#     db_sess.query(WH).delete()
+#     db_sess.query(DH).delete()
+#     db_sess.query(User).delete()
+#     db_sess.query(Record).delete()
+#     db_sess.commit()
+#     user = User(
+#         name='admin',
+#         phone_number="8 (777) 777 7777",
+#         about='main admin',
+#         user_type=3
+#     )
+#     user.set_password('admin')
+#     db_sess.add(user)
+#     db_sess.commit()
+#     return redirect('/')
+#     # return jsonify({'status': 'all data cleared'}), 201
 
 
 @app.route("/donations")
