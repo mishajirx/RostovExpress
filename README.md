@@ -1,6 +1,6 @@
 # "РостовExpress" Сервис Доставки #
 
-# LINK: mzhernevskii.pythonanywhere.com #
+# LINK: https://mzhernevskii.pythonanywhere.com #
 
 # Идея #
 Сервис позволяет пользователям регистрироваться в системе и принимать различные роли: обычный юзер, курьер, админ.
@@ -15,10 +15,10 @@
 В базе всегда присутствует главный админ, что всегда позволяет назначать курьеров и админов.
 
 ## Перенос папки с репозиторием к себе на компьютер ##
-1. Нажмите кнопку fork в репозитории https://github.com/mishajirx/WebProjectYandex
+1. Нажмите кнопку fork в репозитории https://github.com/mishajirx/RostovExpress
 2. Перейдите в командную строку
 3. Перейдите подходящую вам папку
-4. вбейте команду git clone  https://github.com/<YourName>/WebProjectYandex
+4. вбейте команду git clone  https://github.com/<YourName>/RostovExpress
 
 ## Установка нужного обеспечения ##
 #### Для скачивания необходимых библиотек нужно: ####
