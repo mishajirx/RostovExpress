@@ -1,69 +1,69 @@
-# "РостовExpress" Сервис Доставки #
+# "RostovExpress" Delivery Service #
 
 # LINK: https://mzhernevskii.pythonanywhere.com #
 
-# Идея #
-Сервис позволяет пользователям регистрироваться в системе и принимать различные роли: обычный юзер, курьер, админ.
+# Idea #
+The service allows users to register in the system and take on various roles: regular user, courier, admin.
 
-У каждой роли свои возможноcти:
-1. Пользователь может заказывать доставку.
-2. Курьер доставлять, получать за это деньги и рейтинг.
-3. Админ имеет право на принятие на работу и увольнение курьеров, повышение других пользователей до статуса админа
+Each role has its own possibilities:
+1. The user can order delivery.
+2. The courier delivers, receives money, and earns a rating.
+3. The admin has the right to hire and dismiss couriers, promote other users to the admin status.
 
-Также сервис представляет собой REST API. Пользователю API даются права админа пользователя и курьера одновременно.
+Also, the service represents a REST API. The API gives the user both admin and courier rights simultaneously.
 
-В базе всегда присутствует главный админ, что всегда позволяет назначать курьеров и админов.
+The main admin is always present in the database, allowing the appointment of couriers and admins.
 
-## Перенос папки с репозиторием к себе на компьютер ##
-1. Нажмите кнопку fork в репозитории https://github.com/mishajirx/RostovExpress
-2. Перейдите в командную строку
-3. Перейдите подходящую вам папку
-4. вбейте команду git clone  https://github.com/<YourName>/RostovExpress
+## Transferring the Repository Folder to Your Computer ##
+1. Click the fork button in the repository https://github.com/mishajirx/RostovExpress
+2. Open the command line
+3. Navigate to the folder of your choice
+4. Enter the command git clone https://github.com/<YourName>/RostovExpress
 
-## Установка нужного обеспечения ##
-#### Для скачивания необходимых библиотек нужно: ####
-0. Все действие ниже указанные выполнять в терминале
-1. Перейти в командной строке в каталог с проектом
-2. выполнить pip install -r requirements.txt
-#### Пример ####
+## Installing Required Software ##
+#### To download the necessary libraries, follow these steps: ####
+0. Perform all actions listed below in the terminal
+1. Navigate to the project directory in the command line
+2. Execute pip install -r requirements.txt
+#### Example ####
 $ pip install -r requirements.txt
-## Запуск приложения ##
-Для запуска приложения нужно просто выполнить в консоли
-python3 main.py (или sudo python main.py)
-#### Пример #### 
+
+## Running the Application ##
+To run the application, simply execute in the console
+python3 main.py (or sudo python main.py)
+#### Example #### 
 $ python3 main.py
 
-## Запуск Тестов ##
-Для запуска тестов нужно:
-1. Повторить пункты из раздела "Запуск приложения"
-2. Нажать ctrl+z. Выполнить bg
-3. выполнить pytest-3 test.py -x -s
-4. ввести 'y'
-#### Пример: ####
+## Running Tests ##
+To run tests, you need to:
+1. Repeat the steps from the "Running the Application" section
+2. Press ctrl+z. Execute bg
+3. Execute pytest-3 test.py -x -s
+4. Enter 'y'
+#### Example: ####
 $ sudo python3 main.py
 $ ^Z
 & bg
 $ pytest-3 test.py -x -s
 
-## Автозапуск ##
-Чтобы сделать так, чтобы сервер запускался при старте 
-системы нужно зайти в консоль и ввести следующие команды:
+## Auto Start ##
+To make the server start on system boot, enter the following commands in the console:
 1. crontab -e
-2. В открывшемся файле в последней строке набрать:
+2. In the opened file, type the following in the last line:
    @reboot python3 /path_to_the_project/main.py
 
-## Дополнительно
-#### Виды пользователей:
-1. Курьер
-2. Админ
-3. Бот
-#### Возможности бота:
-1. Сделать заказ(/orders)
-2. Кинуть заявку на становление курьером
-#### Возможности админа:
-1. Подтверждать заявки на становление курьером (/couriers)
-#### Возможности курьера:
-1. Принять заказы (/orders/assign)
-2. Изменить свои параметры (/courier/<courier_id>)
-3. Выполнить заказ (orders/complete)
-4. Получить информацию о себе (/couriers/<couriers_id>)
+## Additional
+#### User Types:
+1. Courier
+2. Admin
+3. Bot
+#### Bot capabilities:
+1. Place an order (/orders)
+2. Submit a courier application
+#### Admin capabilities:
+1. Approve courier applications (/couriers)
+#### Courier capabilities:
+1. Accept orders (/orders/assign)
+2. Change their parameters (/courier/<courier_id>)
+3. Complete an order (orders/complete)
+4. Get information about themselves (/couriers/<couriers_id>)
